@@ -29,6 +29,15 @@ namespace Microsoft.Azure.Commands.Common.Authentication
         {
             var cacheHelper = GetCacheHelper(client.AppConfig.ClientId);
             cacheHelper.RegisterCache(client.UserTokenCache);
+            client.UserTokenCache.SetBeforeWrite(BeforeWriteNotification);
+        }
+
+        private void BeforeWriteNotification(TokenCacheNotificationArgs args)
+        {
+            if(AzureSession.Instance.TokenCache != null)
+            {
+                AzureSession.Instance.TokenCache.CacheData = args.TokenCache?.SerializeMsalV3();
+            }
         }
 
         private MsalCacheHelper GetCacheHelper(string clientId)
@@ -49,6 +58,7 @@ namespace Microsoft.Azure.Commands.Common.Authentication
         {
             var cacheHelper = GetCacheHelper(PowerShellClientId);
             cacheHelper.Clear();
+            AzureSession.Instance.TokenCache?.Clear();
         }
     }
 }
